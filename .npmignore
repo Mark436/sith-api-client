@@ -1,0 +1,35 @@
+# Archivos locales
+_local*.json
+_local*.png
+
+# Archivos de test
+src/test.ts
+src/_local_test.ts
+
+# Documentación funcionalidades
+funcionalidades.md
+
+# Build cache
+node_modules
+*.tsbuildinfo
+
+# Editor
+.vscode
+.idea
+*.swp
+*.swo
+.env
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# CI/CD
+.github
+.gitlab-ci.yml
+
+# Workspace
+pnpm-workspace.yaml

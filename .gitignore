@@ -1,0 +1,26 @@
+# Archivos locales
+_local*/*
+dist
+# Archivos de test
+src/test.ts
+src/_local_test.ts
+.env
+# Documentación funcionalidades
+funcionalidades.md
+
+# Build cache
+node_modules
+*.tsbuildinfo
+
+# Editor
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Workspace
+pnpm-workspace.yaml
