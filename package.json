@@ -27,13 +27,13 @@
     "client",
     "ith"
   ],
-  "author": "mark436",
+  "author": "Mark436",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/Mark436/sith-api-client"
   },
-  "homepage": "",
+  "homepage": "https://github.com/Mark436/sith-api-client/blob/main/README.md",
   "type": "module",
   "devDependencies": {
     "@types/node": "26.2.0",
