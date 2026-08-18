@@ -27,13 +27,13 @@
     "client",
     "ith"
   ],
-  "author": "Tu Nombre <tu.email@ejemplo.com>",
+  "author": "mark436",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/tuusuario/sith-api-client"
+    "url": ""
   },
-  "homepage": "https://github.com/tuusuario/sith-api-client#readme",
+  "homepage": "",
   "type": "module",
   "devDependencies": {
     "@types/node": "26.2.0",
