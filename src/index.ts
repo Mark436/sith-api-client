@@ -1,10 +1,20 @@
-import type { ApiTodo } from "./api/types";
+import type { ApiAviso, ApiTodo } from "./api/types";
+import { TIPO_AVISO } from "./dto/Aviso";
 import { mapTodo } from "./mappers/todo.mapper.js";
 
 interface Credenciales {
   user: string;
   pass: string;
 }
+
+function getResponseInfo(response: Response) {
+  return {
+    status: response.status,
+    statusText: response.statusText,
+    url: response.url,
+  };
+}
+
 export class SithClient {
   #LOGIN_ENDPOINT = "http://sith.ith.mx/XTodo/wr/login";
   #LOGOUT_ENDPOINT = "http://sith.ith.mx/XTodo/wr/logout";
@@ -34,20 +44,26 @@ export class SithClient {
       },
       body: JSON.stringify(credenciales),
     }).catch((e: unknown) => {
-      throw new Error("Error en el log in", { cause: e });
+      throw new Error("Error en el login", { cause: e });
     });
+    if (!loginRes.ok) {
+      throw new Error("Error en el login", {
+        cause: getResponseInfo(loginRes),
+      });
+    }
     const data = await loginRes.json();
 
-    const { alumno, avisos, token } = (() => {
-      let datos;
-      try {
-        datos = mapTodo(data);
-      } catch (e) {
-        throw new Error("No se encontraron todos los datos ", { cause: e });
-      }
-      return datos;
-    })();
-
+    if (!(data.al && data.tkn)) {
+      throw new Error("Error en el login, faltan datos esperados", {
+        cause:
+          (Array.isArray(data.lmsg) &&
+            data.lmsg
+              ?.filter((aviso: ApiAviso) => aviso.severity === TIPO_AVISO.ERROR)
+              .map((aviso: ApiAviso) => `${aviso.summary}: ${aviso.detail}`)) ||
+          [],
+      });
+    }
+    const token = data.tkn.toString();
     const logoutRes = await fetch(this.#LOGOUT_ENDPOINT, {
       method: "POST",
       headers: {
@@ -57,6 +73,13 @@ export class SithClient {
     }).catch((e: unknown) => {
       throw new Error("Error en el log out ", { cause: e });
     });
+    if (!logoutRes.ok) {
+      throw new Error("Logout fallido", {
+        cause: getResponseInfo(logoutRes),
+      });
+    }
+    const { alumno, avisos } = mapTodo(data);
+
     return { alumno, avisos };
   }
   static async mapDatos(data: ApiTodo) {

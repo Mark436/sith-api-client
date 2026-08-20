@@ -20,16 +20,19 @@ Esta librería se proporciona tal cual, sin garantías de ningún tipo, ni expl�
 ## 📦 Instalación
 
 **Con pnpm:**
+
 ```bash
 pnpm add sith-api-client
 ```
 
 **Con npm:**
+
 ```bash
 npm install sith-api-client
 ```
 
 **Con yarn:**
+
 ```bash
 yarn add sith-api-client
 ```
@@ -37,13 +40,13 @@ yarn add sith-api-client
 ## 🚀 Uso rápido
 
 ```typescript
-import { SithClient } from 'sith-api-client';
+import { SithClient } from "sith-api-client";
 
 const client = new SithClient();
 
 const datos = await client.fetchDatos({
-  user: 'tu_usuario',
-  pass: 'tu_contraseña',
+  user: "tu_usuario",
+  pass: "tu_contraseña",
 });
 
 console.log(datos.alumno);
@@ -59,15 +62,19 @@ console.log(datos.avisos);
 Obtiene la información del alumno y sus avisos a partir de las credenciales proporcionadas por el usuario.
 
 **Parámetros:**
+
 - `credenciales` (Credenciales): objeto con `user` y `pass`
 
 **Retorna:** `Promise<{ alumno, avisos }>`
 
+Cada aviso contiene `titulo`, `mensaje` y `tipo`. Los tipos conocidos son `error`, `warn` e `info`.
+
 **Ejemplo:**
+
 ```typescript
 const { alumno, avisos } = await client.fetchDatos({
-  user: 'matricula',
-  pass: 'contraseña',
+  user: "matricula",
+  pass: "contraseña",
 });
 ```
 
@@ -76,6 +83,7 @@ const { alumno, avisos } = await client.fetchDatos({
 Mapea la respuesta raw de la API a objetos tipados.
 
 **Parámetros:**
+
 - `data` (ApiTodo): respuesta cruda de la API
 
 **Retorna:** `Promise<{ alumno, avisos }>`
