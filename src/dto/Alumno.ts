@@ -1,4 +1,4 @@
-import type { Boleta } from "./Boleta";
+import type { Boleta } from "./Boleta.js";
 
 /**
  * Información del alumno solicitado

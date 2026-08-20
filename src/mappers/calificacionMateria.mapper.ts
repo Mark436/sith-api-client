@@ -1,5 +1,5 @@
-import type { ApiCalificacionMateria } from "../api/types";
-import type { CalificacionMateria } from "../dto/Materias";
+import type { ApiCalificacionMateria } from "../api/types.js";
+import type { CalificacionMateria } from "../dto/Materias.js";
 
 export function mapCalificacionMateria(
   data: ApiCalificacionMateria,

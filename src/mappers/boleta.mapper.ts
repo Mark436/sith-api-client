@@ -1,5 +1,5 @@
-import type { ApiBoleta } from "../api/types";
-import type { Boleta } from "../dto/Boleta";
+import type { ApiBoleta } from "../api/types.js";
+import type { Boleta } from "../dto/Boleta.js";
 import { mapCalificacionMateria } from "./calificacionMateria.mapper.js";
 
 export function mapBoleta(data: ApiBoleta): Boleta {

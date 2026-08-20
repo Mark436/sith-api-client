@@ -1,5 +1,5 @@
-import type { ApiAlumno } from "../api/types";
-import type { Alumno } from "../dto/Alumno";
+import type { ApiAlumno } from "../api/types.js";
+import type { Alumno } from "../dto/Alumno.js";
 import { mapBoleta } from "./boleta.mapper.js";
 export function mapAlumno(data: ApiAlumno): Alumno {
   return {

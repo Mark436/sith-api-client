@@ -1,5 +1,5 @@
-import type { ApiAviso, ApiTodo } from "./api/types";
-import { TIPO_AVISO } from "./dto/Aviso";
+import type { ApiAviso, ApiTodo } from "./api/types.js";
+import { TIPO_AVISO } from "./dto/Aviso.js";
 import { mapTodo } from "./mappers/todo.mapper.js";
 
 interface Credenciales {

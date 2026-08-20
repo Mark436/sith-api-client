@@ -1,4 +1,4 @@
-import type { CalificacionMateria } from "./Materias";
+import type { CalificacionMateria } from "./Materias.js";
 
 export interface Boleta {
   periodo: string; //Periodo de la boleta

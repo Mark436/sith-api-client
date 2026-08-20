@@ -1,4 +1,4 @@
-import type { ApiTodo } from "../api/types";
+import type { ApiTodo } from "../api/types.js";
 import { mapAviso } from "./aviso.mapper.js";
 import { mapAlumno } from "./alumno.mapper.js";
 
