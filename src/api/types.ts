@@ -4,8 +4,20 @@ export interface ApiInfoAdicional {
   nom: string; //nombre
   car: string; //carrera
   sem: number; //semestre actual
-  prg: number; //promedio (general tal vez)
-  prs: number; //promedio del semestre tal vez tmb
+  toca: string; //fecha de reinscripcion
+  //promedios
+  prg: number; //global
+  prs: number; //del semestre
+  //creditos en la carrera
+  tot: number; //totales
+  cfa: number; //pendientes para terminar
+  //adeudos
+  abi: string; //biblioteca
+  aca: string; //academico
+  aes: string; //escolar
+  afi: string; //financiero
+  ava: string; //administrativo (administrativa)
+
 }
 export interface ApiMateriaReticula {
   x: number; //coordenadas en x (columna)
