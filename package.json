@@ -1,6 +1,6 @@
 {
   "name": "sith-api-client",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Cliente TypeScript no oficial para la API de SITH del ITH",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -17,7 +17,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "tsx src/test.ts",
+    "test": "tsx --test \"tests/**/*.test.ts\"",
     "prepublishOnly": "npm run build && npm test"
   },
   "keywords": [
