@@ -1,93 +1,107 @@
-//TODAS LAS DESCRIPCIONES SON TEMPORALES, REALMENTE NO ENTIENDO NADA DE ESTO
+/**
+ * Tipos crudos del API de SITH, con los nombres originales (muy abreviados)
+ * tal como llegan en el JSON.
+ *
+ * Los comentarios se basan en observación de respuestas reales y en las
+ * notas de `_local api samples/api_meaning.json`; varios campos siguen sin
+ * confirmarse y se marcan como dudosos.
+ */
 
 export interface ApiInfoAdicional {
-  nom: string; //nombre
-  car: string; //carrera
-  sem: number; //semestre actual
-  toca: string; //fecha de reinscripcion
-  //promedios
-  prg: number; //global
-  prs: number; //del semestre
-  //creditos en la carrera
-  tot: number; //totales
-  cfa: number; //pendientes para terminar
-  //adeudos
-  abi: string; //biblioteca
-  aca: string; //academico
-  aes: string; //escolar
-  afi: string; //financiero
-  ava: string; //administrativo (administrativa)
-
+  nom: string; // nombre del alumno
+  car: string; // carrera
+  sem: number; // semestre actual
+  toca: string; // fecha de reinscripción ("YYYY-MM-DD hh:mm:ss", hora local Hermosillo)
+  // promedios
+  prg: number; // promedio global
+  prs: number; // promedio del semestre
+  // créditos de la carrera
+  tot: number; // totales
+  cfa: number; // faltantes para terminar
+  // adeudos; cada área trae "N" cuando no hay adeudo, u otro texto describiéndolo
+  abi: string; // biblioteca
+  aca: string; // académico
+  aes: string; // escolar
+  afi: string; // financiero
+  ava: string; // administrativo
 }
+
 export interface ApiMateriaReticula {
-  x: number; //coordenadas en x (columna)
-  y: number; //coordenadas en y (fila)
-  c: number; //ni idea
-  g: number; //menos idea
-  m: string; //clave de la materia
-  t: string; //nombre de la materia
-  //Se supone que sea una lista de las coordenadas de las materias con las que se seria
-  // pero al parecer es una materia con la que se seria
-  r: [[[4, 3]], []]; // no termino de entender por que viene en este formato
+  x: number; // posición horizontal / columna de la materia en la retícula
+  y: number; // posición vertical / fila (semestre sugerido)
+  c: number; // probablemente créditos de la materia (sin confirmar)
+  g: number; // probablemente grupo (sin confirmar)
+  m: string; // clave de la materia
+  t: string; // nombre de la materia, posiblemente seguido de calificación y oportunidad
+  /**
+   * Registros/información relacionada con la materia (serias con las que
+   * se cursa). El formato exacto aún no está claro; en muestras llega como
+   * listas anidadas de pares [x, y].
+   */
+  r: unknown;
 }
 export interface ApiMateriaInscripcion {
-  mat: string; //nombre de la materia
-  gbl: string; //ni idea, venia vacío
-  cr: number; //cuantos creditos vale la materia
-  gpo: string; //grupo de la materia
-  mape: string; //apellidos del masestro
-  mnom: string; //nombres del masestro
-  lu: string; //horas y salon en el día, aplica para todos 'hh:mm-hh:mm GGG\n' Hora Minuto y Grupo si no tiene nada es solo '\n'
-  ma: string;
-  mi: string;
-  ju: string;
-  vi: string;
-  sa: string;
+  mat: string; // clave de la materia
+  gbl: string; // información global de la materia (vacío en las muestras)
+  cr: number | string; // créditos de la materia (puede llegar vacío "")
+  gpo: string; // grupo asignado ("*" si está sin definir)
+  mape: string; // apellidos del maestro
+  mnom: string; // nombres del maestro
+  /**
+   * Horario por día: "hh:mm-hh:mm GGG\n" (hora inicio-fin y salón/grupo).
+   * Si no hay clase ese día llega vacío o solo "\n".
+   */
+  lu: string; // lunes
+  ma: string; // martes
+  mi: string; // miércoles
+  ju: string; // jueves
+  vi: string; // viernes
+  sa: string; // sábado
 }
 export interface ApiCalificacionMateria {
-  clve: string; //clave de la materia
-  dmat: string; //nombre de la materia
-  cali: string; //Calificacion (es del 70 al 100 tambien esta aprovado y no aprobado para las que no llevan calificacion)  opor: string; // Oportunidad (OO Ordinario OC ordinario complementario etc, no me las se)
-  opor: string; //descripcion de la oportunidad si es Ev Ordinaria, Ev Complementaria, etc
-  dopor: string; //descripcion de la oportunidad si es Ev Ordinaria, Ev Complementaria, etc
-  cr: number; //creditos que vale la materia
+  clve: string; // clave de la materia
+  dmat: string; // nombre de la materia
+  cali: string; // calificación (70–100; también textos como "Aprobado"/"No aprobado")
+  opor: string; // clave de la oportunidad (OO = ordinaria, OC = complementaria, etc.)
+  dopor: string; // descripción legible de la oportunidad ("Ev Ordinaria", ...)
+  cr: number; // créditos que vale la materia
 }
-// type ApiPeriodo = ApiBoleta[];
 /**
- * SEGÚN YO ES IGUAL A API PERIODO PERO NO SÉ PORQUE NO TIENE INFORMACIÓN la muestra
- * SUPONGO QUE SON LAS QUE SE ESTAN CURSANDO PERO EL TIPO DEBERIA SER IGUAL
+ * Boleta de un periodo.
  */
 export interface ApiBoleta {
-  prom: string; //promedio del periodo
-  descPer: string; //Span del periodo
-  lcal: ApiCalificacionMateria[]; //lista de las materias de la boleta con calificacion
+  prom: string; // promedio del periodo (string aunque sea numérico)
+  descPer: string; // texto del periodo (p. ej. "SEP-FEB 2025")
+  lcal: ApiCalificacionMateria[]; // materias del periodo con calificación
 }
 /**
- * Ignorar, no tengo mucha idea y solo puse 1 de los datos
+ * Datos del módulo de pagos. Poco explorado; `mp_order` curiosamente
+ * coincide con el número de control y se usa como tal en el mapeo.
  */
 export interface ApiBanco {
-  mp_amount: string; //El adeudo actual
-  mp_order: string; //Curiosamente es el no Control
+  mp_amount: string; // adeudo actual
+  mp_order: string; // número de control del alumno
 }
 export interface ApiAlumno {
-  tit: string; //no control, nombre y carrera separados por espacios, posible separacion con regex
-  // info: string; //creditos (lo estoy buscando en otra parte para ver si es más util los datos por separado)
+  tit: string; // número de control + nombre + carrera separados por espacios
+  ret: ApiMateriaReticula[]; // retícula (materias del plan de estudios con coordenadas)
+  gins: ApiMateriaInscripcion[]; // materias inscritas con horario semanal
   correo: string;
   telefono: string;
-  ret: ApiMateriaReticula[]; //reticula APARENTEMENTE
-  gins: ApiMateriaInscripcion[]; //es como las materias para la inscripción
-  infadic: ApiInfoAdicional;
-  kdx: ApiBoleta[]; //el kardex deberia tener más información pero al parecer no, si se agrega otra data lo cambio
-  boleta: ApiBoleta;
-  banco: ApiBanco; //Datos de pagos, no entiendo la velda
+  infadic: ApiInfoAdicional; // información adicional del alumno
+  /** Kardex histórico. En las muestras llega vacío o igual que `boleta`. */
+  kdx: ApiBoleta[];
+  boleta: ApiBoleta; // boleta del periodo actual
+  banco: ApiBanco; // datos de pagos
 }
 export interface ApiAviso {
-  summary: string; //resumen del mensaje supongo que para el titulo del toast
-  detail: string; //Mensaje ya detallado
-  severity: string; //Nivel de importancia conocidos: warn, info, error
+  summary: string; // resumen, útil como título
+  detail: string; // mensaje detallado
+  severity: string; // severidad conocidos: "error", "warn", "info" (lista no exhaustiva)
 }
 export interface ApiTodo {
-  al: ApiAlumno; //informacion del alumno
-  lmsg: ApiAviso[]; //Lista de avisos o mensajes
-  tkn: string; //token de sesion
+  rol?: string; // rol del usuario ("al" = alumno); presente en otras rutas
+  al: ApiAlumno; // información del alumno
+  lmsg: ApiAviso[]; // lista de avisos/mensajes
+  tkn: string; // token de sesión (JWT) — consumido internamente por el cliente
 }
