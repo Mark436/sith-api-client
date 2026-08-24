@@ -53,13 +53,45 @@ console.log(datos.alumno);
 console.log(datos.avisos);
 ```
 
+## ⚙️ Opciones
+
+`SithClient` acepta opciones opcionales en el constructor:
+
+```typescript
+// Por defecto usa el endpoint oficial (HTTP plano).
+const client = new SithClient();
+
+// Se puede apuntar a un proxy propio, por ejemplo con HTTPS para evitar
+// el mixed-content que causaría el endpoint original dentro de una web.
+const clientProxy = new SithClient({
+  baseUrl: "https://mi-proxy.ejemplo.mx/sith",
+});
+```
+
+Los endpoints `/login` y `/logout` se derivan de `baseUrl`.
+
+## 🔁 Cómo funciona
+
+Cada llamada a `fetchDatos()` hace un ciclo completo **sin estado**:
+
+1. Valida las credenciales localmente.
+2. `POST /login` con `{ user, pass }` y exige `al` (alumno) y `tkn` (token).
+3. `POST /logout` inmediato con el token (**best-effort**: si falla, los
+   datos no se pierden; solo se agrega un aviso de tipo `warn`).
+4. Mapea la respuesta cruda a DTOs tipados y regresa `{ alumno, avisos }`.
+
+El token se consume internamente y nunca se expone: no hay sesión, por lo
+que cada actualización necesita las credenciales otra vez. Los detalles
+internos, el modelo de datos y el glosario del payload crudo están en
+[`api.md`](./api.md).
+
 ## 📚 API
 
 ### `SithClient`
 
 #### `fetchDatos(credenciales)`
 
-Obtiene la información del alumno y sus avisos a partir de las credenciales proporcionadas por el usuario.
+Obtiene la información del alumno, su horario inscrito y sus avisos a partir de las credenciales proporcionadas por el usuario.
 
 **Parámetros:**
 
@@ -67,26 +99,63 @@ Obtiene la información del alumno y sus avisos a partir de las credenciales pro
 
 **Retorna:** `Promise<{ alumno, avisos }>`
 
-Cada aviso contiene `titulo`, `mensaje` y `tipo`. Los tipos conocidos son `error`, `warn` e `info`.
+`alumno.horario` contiene las materias inscritas con su horario semanal (`dias.lunes...sabado`, omitiendo los días sin clase). Cada aviso contiene `titulo`, `mensaje` y `tipo`. Los tipos conocidos son `error`, `warn` e `info`, pero el API puede devolver otros (p. ej. `success`), por eso `tipo` es un string abierto.
+
+**Errores:** lanza subclases de `SithError`:
+
+| Clase | Cuándo |
+| --- | --- |
+| `SithAuthError` | credenciales inválidas localmente o rechazadas por el API (incluye 401/403) |
+| `SithNetworkError` | fallo de red/DNS al contactar el servicio |
+| `SithHttpError` | respuesta HTTP `!ok` distinta de 401/403 o cuerpo que no es JSON |
+
+Todos conservan el `cause` original con su forma histórica, y `SithHttpError` expone `.status`.
 
 **Ejemplo:**
 
 ```typescript
-const { alumno, avisos } = await client.fetchDatos({
-  user: "matricula",
-  pass: "contraseña",
-});
+import {
+  SithClient,
+  SithAuthError,
+  SithHttpError,
+  SithNetworkError,
+} from "sith-api-client";
+
+try {
+  const { alumno, avisos } = await client.fetchDatos({
+    user: "matricula",
+    pass: "contraseña",
+  });
+} catch (error) {
+  if (error instanceof SithAuthError) {
+    // credenciales incorrectas
+  } else if (
+    error instanceof SithNetworkError ||
+    error instanceof SithHttpError
+  ) {
+    // problema de conexión o del servicio
+  }
+}
 ```
 
 #### `mapDatos(data)`
 
-Mapea la respuesta raw de la API a objetos tipados.
+Mapea la respuesta raw de la API a objetos tipados, sin hacer peticiones.
 
 **Parámetros:**
 
 - `data` (ApiTodo): respuesta cruda de la API
 
 **Retorna:** `Promise<{ alumno, avisos }>`
+
+## 🧪 Pruebas
+
+Suite unitaria 100% offline con datos mock fabricados (nunca toca la API
+real):
+
+```bash
+npm test
+```
 
 ## 🔒 Seguridad y manejo de credenciales
 
