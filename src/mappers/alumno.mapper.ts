@@ -3,6 +3,7 @@ import type { Adeudos } from "../dto/Adeudos.js";
 import type { Alumno } from "../dto/Alumno.js";
 import type { Creditos } from "../dto/Creditos.js";
 import { mapBoleta } from "./boleta.mapper.js";
+import { mapHorario } from "./horario.mapper.js";
 
 function convertirFechaHermosillo(fecha: string): string {
   return `${fecha.replace(" ", "T")}-07:00`;
@@ -64,5 +65,6 @@ export function mapAlumno(data: ApiAlumno): Alumno {
     adeudos,
     creditos,
     progreso: calcularProgreso(creditos),
+    horario: data.gins.map(mapHorario),
   };
 }
