@@ -126,16 +126,21 @@ export class SithClient {
     }
 
     const datos = mapTodo(data);
-    if (logoutFallido !== undefined) {
-      datos.avisos.push({
-        titulo: "Logout fallido",
-        mensaje:
-          "Los datos se obtuvieron correctamente, pero no se pudo cerrar la sesión en el servidor.",
-        tipo: TIPO_AVISO.ADVERTENCIA,
-      });
+    if (logoutFallido === undefined) {
+      return datos;
     }
-
-    return datos;
+    return {
+      ...datos,
+      avisos: [
+        ...datos.avisos,
+        {
+          titulo: "Logout fallido",
+          mensaje:
+            "Los datos se obtuvieron correctamente, pero no se pudo cerrar la sesión en el servidor.",
+          tipo: TIPO_AVISO.ADVERTENCIA,
+        },
+      ],
+    };
   }
 
   /**
