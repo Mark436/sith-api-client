@@ -1,7 +1,7 @@
 # sith-api-client — Cómo funciona (arquitectura y decisiones)
 
 Notas de referencia para [`sith-api-client`](https://github.com/Mark436/sith-api-client)
-(v2.3.0), cliente TypeScript no oficial que habla con la API académica de
+(v3.0.0), cliente TypeScript no oficial que habla con la API académica de
 SITH del Instituto Tecnológico de Hermosillo. El paquete es dueño del HTTP,
 del parseo y del mapeo a DTOs; los consumidores deciden cuándo consultar,
 cómo cachear y cómo presentar.
@@ -32,10 +32,13 @@ await SithClient.mapDatos(rawApiTodo); // Promise<{ alumno, avisos }>
 - El paquete es ESM: conserva las extensiones `.js` en imports internos.
 - El mapa `exports` solo expone la entrada raíz; imports profundos como
   `sith-api-client/dist/dto/Alumno.js` están bloqueados. Los tipos públicos
-  (`Alumno`, `Aviso`, `DatosAlumno`, `HorarioMateria`, errores, etc.) se
-  re-exportan desde la raíz desde v2.3.0, así que impórtalos de ahí.
-- Desde v2.3.0 el logout ya no descarta datos cuando falla y los errores
-  están tipados (ver abajo). Todo lo demás es retrocompatible con 2.2.x.
+  (`Alumno`, `Aviso`, `DatosAlumno`, `HorarioMateria`, `ReticulaMateria`,
+  errores, etc.) se re-exportan desde la raíz, así que impórtalos de ahí.
+- **v3.0.0 (breaking):** se expone `alumno.reticula` (la retícula del plan de
+  estudios) y se añade `SithMappingError` para payloads malformados. El resto
+  (logout inmutable, validación de shape) es refactor interno sin cambios
+  observables. Retrocompatible con 2.x salvo la nueva propiedad `reticula` en
+  `Alumno`.
 
 ## Ciclo de vida de una petición (sin estado)
 
@@ -120,6 +123,11 @@ grafo mapeado:
   `clave`, `creditos?`, `grupo`, `docente` y `dias { lunes..sabado? }`. Los
   días sin clase se omiten; tolera entradas enmascaradas/vacías (grupo `*`,
   créditos `""`), típicas de periodos vacacionales.
+- Retícula (v3.0.0, derivada de `ret[]`):
+  `reticula: ReticulaMateria[]`, el plan de estudios completo con
+  `clave`, `nombre`, `coordenadas { x, y }`, `calificacion?`, `c`, `g` y
+  `seriacion`. Consulta "Retícula" abajo para el detalle y lo que está en
+  fase de prueba.
 - Avisos: `avisos: Aviso[] { titulo, mensaje, tipo }` a nivel raíz.
 
 ### Gotchas de tipos
@@ -133,6 +141,30 @@ grafo mapeado:
   son `"error"`, `"warn"`, `"info"` (y `"success"` fuera del login, p. ej.
   en inscripción), pero la lista NO es exhaustiva; se mantiene abierto
   mientras se descubren más severidades.
+
+## Retícula (`alumno.reticula`)
+
+Desde v3.0.0 la retícula (`ret[]`) se mapea a `ReticulaMateria[]`. Cada
+materia expone:
+
+- `coordenadas { x, y }` → columna y fila/semestre en la retícula.
+- `clave` (`m`) y `nombre` (primera parte de `t`).
+- `calificacion? { calificacion?, oportunidad? }`: solo si la materia ya fue
+  cursada. El texto crudo `t` mezcla `"NOMBRE CALIF OPORTUNIDAD"` (o separado
+  por salto de línea); el mapper los separa.
+- `seriacion: Coordenadas[][]` → grupos "o" de `r`. Para cursar la materia se
+  requiere aprobar UNA coordenada de cada grupo no vacío; los grupos vacíos se
+  omiten.
+- `c` y `g` → campos crudos conservados tal cual.
+
+### ⚠️ Fase de prueba
+
+- **`c` NO son créditos.** En las muestras toma `0/1/2/3/9`, mientras que los
+  créditos reales de esas mismas materias (según el kardex) son 4-5. Su
+  significado real no está confirmado y el campo se conserva sin interpretar.
+- **`g`** llega siempre `0` en las muestras; significado por confirmar.
+- **Parseo de `t`:** separar nombre de calificación/oportunidad se basa en
+  muestras (separador `\n` o espacio) y puede requerir ajustes.
 
 ## Glosario del payload crudo
 
@@ -150,8 +182,10 @@ observación; lo no confirmado se marca).
   docente, `lu/ma/mi/ju/vi/sa` horarios `"hh:mm-hh:mm salón\n"` (vacío =
   sin clase).
 - `ret[]` (retícula): `x`/`y` coordenadas (columna/fila-semestre), `m`
-  clave, `t` nombre, `c`/`g` dudosos (¿créditos?, ¿grupo?), `r` seriación
-  en formato aún no claro.
+  clave, `t` `"NOMBRE\nCALIF OPORTUNIDAD"` (o separado por espacio; si no se
+  cursó solo el nombre), `r` seriación `[[[x,y], ...], ...]` (grupos "o";
+  los vacíos llegan como `[]`). `c` NO son créditos (sin confirmar) y `g`
+  es siempre `0`; ver "Retícula" arriba.
 - `kdx[]` kardex histórico (en muestras llega vacío o igual que `boleta`);
   `boleta.prom` promedio del periodo como string; `banco.mp_order`
   curiosamente coincide con el número de control (así se obtiene
@@ -163,11 +197,11 @@ observación; lo no confirmado se marca).
    credenciales. Candidato a mejora del backend.
 2. **Endpoint oficial en HTTP plano** con base configurable pero sin HTTPS
    nativo; usar proxy propio si hace falta TLS.
-3. **Retícula sin mapear**: existe el DTO `ReticulaMateria` pero ningún
-   mapper la consume todavía (el formato de `ret[].r` sigue sin confirmar).
+3. **Retícula mapeada pero en fase de prueba**: `c` (no créditos), `g` y el
+   parseo de `t` siguen sin confirmar; ver "Retícula" arriba.
 4. **`kdx` y `banco` poco explorados**: se usan mínimamente (boleta actual,
    número de control); puede haber más información aprovechable.
-5. Severidades de avisos y campos `ret[].{c,g,r}` siguen bajo observación;
+5. Severidades de avisos y campos `ret[].{c,g}` siguen bajo observación;
    documentar hallazgos aquí.
 
 ## Pruebas
@@ -184,7 +218,8 @@ npm run prepublish # build + test
 ```
 
 Cobertura: cada mapper por separado (incluidos casos borde: días vacíos,
-créditos `""`/`"*"`, progreso 0, adeudos mixtos) y el ciclo completo del
+créditos `""`/`"*"`, progreso 0, adeudos mixtos, retícula y su seriación,
+payload malformado -> `SithMappingError`) y el ciclo completo del
 cliente (éxito, logout fallido conservando datos + aviso warn, 401 ->
 `SithAuthError`, otros !ok -> `SithHttpError`, rechazo de red, cuerpo
 no-JSON, credenciales inválidas sin peticiones, `baseUrl` personalizada).

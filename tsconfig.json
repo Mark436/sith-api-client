@@ -14,11 +14,6 @@
     "resolveJsonModule": true,
     "lib": ["ES2022", "DOM"]
   },
-  "include": ["src/**/*.ts", "_local api samples/test.ts"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "src/test.ts",
-    "_local api samples/test.ts"
-  ]
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules", "dist", "src/test.ts"]
 }

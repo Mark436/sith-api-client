@@ -99,7 +99,7 @@ Obtiene la información del alumno, su horario inscrito y sus avisos a partir de
 
 **Retorna:** `Promise<{ alumno, avisos }>`
 
-`alumno.horario` contiene las materias inscritas con su horario semanal (`dias.lunes...sabado`, omitiendo los días sin clase). Cada aviso contiene `titulo`, `mensaje` y `tipo`. Los tipos conocidos son `error`, `warn` e `info`, pero el API puede devolver otros (p. ej. `success`), por eso `tipo` es un string abierto.
+`alumno.horario` contiene las materias inscritas con su horario semanal (`dias.lunes...sabado`, omitiendo los días sin clase). `alumno.reticula` contiene las materias del plan de estudios (la retícula; ⚠️ en fase de prueba, ver [`api.md`](./api.md)). Cada aviso contiene `titulo`, `mensaje` y `tipo`. Los tipos conocidos son `error`, `warn` e `info`, pero el API puede devolver otros (p. ej. `success`), por eso `tipo` es un string abierto.
 
 **Errores:** lanza subclases de `SithError`:
 
@@ -108,6 +108,7 @@ Obtiene la información del alumno, su horario inscrito y sus avisos a partir de
 | `SithAuthError` | credenciales inválidas localmente o rechazadas por el API (incluye 401/403) |
 | `SithNetworkError` | fallo de red/DNS al contactar el servicio |
 | `SithHttpError` | respuesta HTTP `!ok` distinta de 401/403 o cuerpo que no es JSON |
+| `SithMappingError` | el payload del API llega malformado (le falta `al` o `lmsg`) |
 
 Todos conservan el `cause` original con su forma histórica, y `SithHttpError` expone `.status`.
 
@@ -118,6 +119,7 @@ import {
   SithClient,
   SithAuthError,
   SithHttpError,
+  SithMappingError,
   SithNetworkError,
 } from "sith-api-client";
 
@@ -134,6 +136,8 @@ try {
     error instanceof SithHttpError
   ) {
     // problema de conexión o del servicio
+  } else if (error instanceof SithMappingError) {
+    // el API devolvió un payload inesperado
   }
 }
 ```
@@ -179,6 +183,13 @@ Si el servicio o la institución lo prohíben, restringen o cambian, el autor no
 ## 📝 Licencia
 
 MIT
+
+## 🗺️ Documentación
+
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — estructura y arquitectura del paquete.
+- [`api.md`](./api.md) — detalle interno del ciclo de petición, el modelo de
+  datos y el glosario del payload crudo.
+- [`PLAN.md`](./PLAN.md) — pendientes de limpieza y backlog futuro.
 
 ## 🤝 Contribuir
 
