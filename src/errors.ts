@@ -41,3 +41,12 @@ export class SithHttpError extends SithError {
 export class SithAuthError extends SithError {
   override readonly name = "SithAuthError";
 }
+
+/**
+ * El payload crudo del API tiene una forma inesperada (le falta `al` o
+ * `lmsg`, o no es el objeto esperado) y no es posible mapearlo.
+ * Expone en `cause` lo que realmente llegó para poder inspeccionarlo.
+ */
+export class SithMappingError extends SithError {
+  override readonly name = "SithMappingError";
+}

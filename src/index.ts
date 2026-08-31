@@ -152,13 +152,18 @@ export class SithClient {
   }
 }
 
-export { SithAuthError, SithError, SithHttpError, SithNetworkError } from "./errors.js";
+export { SithAuthError, SithError, SithHttpError, SithMappingError, SithNetworkError } from "./errors.js";
 export { TIPO_AVISO } from "./dto/Aviso.js";
 export type { Aviso } from "./dto/Aviso.js";
 export type { Alumno } from "./dto/Alumno.js";
 export type { Adeudos } from "./dto/Adeudos.js";
 export type { Boleta } from "./dto/Boleta.js";
-export type { CalificacionMateria, Coordenadas, ReticulaMateria } from "./dto/Materias.js";
+export type {
+  CalificacionMateria,
+  Coordenadas,
+  ReticulaCalificacion,
+  ReticulaMateria,
+} from "./dto/Materias.js";
 export type { Creditos } from "./dto/Creditos.js";
 export type { HorarioDia, HorarioMateria } from "./dto/Horario.js";
 export type { DatosAlumno } from "./dto/DatosAlumno.js";
