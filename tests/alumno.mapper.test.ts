@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { mapAlumno } from "../src/mappers/alumno.mapper.js";
-import { baseApiTodo } from "./helpers/mock.js";
+import { baseApiTodo, baseApiTodoReticula } from "./helpers/mock.js";
 
 test("mapAlumno mapea la identidad y promedios del alumno", () => {
   const alumno = mapAlumno(baseApiTodo.al);
@@ -108,4 +108,17 @@ test("mapAlumno mapea el horario desde gins y tolera entradas vacías", () => {
 test("mapAlumno regresa horario vacío cuando no hay materias inscritas", () => {
   const alumno = mapAlumno(baseApiTodo.al);
   assert.deepEqual(alumno.horario, []);
+});
+
+test("mapAlumno mapea la retícula cuando el payload la trae", () => {
+  const alumno = mapAlumno(baseApiTodoReticula.al);
+
+  assert.equal(alumno.reticula.length, 4);
+  assert.equal(alumno.reticula[0].clave, "ACF0905");
+  assert.deepEqual(alumno.reticula[0].coordenadas, { x: 4, y: 1 });
+});
+
+test("mapAlumno regresa retícula vacía cuando el payload no la trae", () => {
+  const alumno = mapAlumno(baseApiTodo.al);
+  assert.deepEqual(alumno.reticula, []);
 });

@@ -2,6 +2,7 @@ import type { Adeudos } from "./Adeudos.js";
 import type { Boleta } from "./Boleta.js";
 import type { Creditos } from "./Creditos.js";
 import type { HorarioMateria } from "./Horario.js";
+import type { ReticulaMateria } from "./Materias.js";
 
 /**
  * Información del alumno solicitado
@@ -25,4 +26,10 @@ export interface Alumno {
    * Puede llegar vacía (p. ej. en periodos vacacionales).
    */
   horario: HorarioMateria[];
+  /**
+   * Materias del plan de estudios (retícula), derivadas de `ret[]`.
+   * ⚠️ Fase de prueba: los campos `c`/`g` y el parseo de la calificación
+   * siguen pendientes de confirmar.
+   */
+  reticula: ReticulaMateria[];
 }

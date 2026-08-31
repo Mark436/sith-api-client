@@ -46,3 +46,55 @@ export const baseApiTodo: ApiTodo = {
   lmsg: [{ summary: "Bienvenido", detail: "Sesión iniciada", severity: "info" }],
   tkn: "token-mock",
 };
+
+/**
+ * Retícula cruda fabricada (`ret[]`). Cubre las variantes observadas del
+ * campo `t`: nombre con calificación+oportunidad separados por salto de
+ * línea, por espacio, y materia sin cursar (solo nombre). Incluye seriación
+ * con grupos "o" (y grupos vacíos que el mapper debe omitir).
+ */
+export const retReticulaMock = [
+  {
+    x: 4,
+    y: 1,
+    c: 2,
+    g: 0,
+    m: "ACF0905",
+    t: "ECUACIONES DIFERENCIALES\n87 OO",
+    r: [[[3, 1]], []],
+  },
+  {
+    x: 3,
+    y: 1,
+    c: 2,
+    g: 0,
+    m: "ACF0904",
+    t: "CALCULO VECTORIAL 83 OC",
+    r: [[], []],
+  },
+  {
+    x: 1,
+    y: 7,
+    c: 0,
+    g: 0,
+    m: "TUS2010",
+    t: "TUTORIAS I",
+    r: [[], []],
+  },
+  {
+    x: 6,
+    y: 8,
+    c: 3,
+    g: 0,
+    m: "ACS2010",
+    t: "ACTIVIDADES COMPLEMENTARIAS",
+    r: [[[4, 8], [5, 8]], [[6, 7]]],
+  },
+];
+
+/** `baseApiTodo` con la retícula poblada, para pruebas de `4a`. */
+export const baseApiTodoReticula: ApiTodo = {
+  ...baseApiTodo,
+  al: { ...baseApiTodo.al, ret: retReticulaMock },
+};
+

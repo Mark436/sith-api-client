@@ -26,19 +26,37 @@ export interface ApiInfoAdicional {
   ava: string; // administrativo
 }
 
+/**
+ * Coordenada [x, y] dentro de la retícula, tal como llega en `r`.
+ */
+export type ApiCoordenadas = [number, number];
+
 export interface ApiMateriaReticula {
   x: number; // posición horizontal / columna de la materia en la retícula
   y: number; // posición vertical / fila (semestre sugerido)
-  c: number; // probablemente créditos de la materia (sin confirmar)
-  g: number; // probablemente grupo (sin confirmar)
-  m: string; // clave de la materia
-  t: string; // nombre de la materia, posiblemente seguido de calificación y oportunidad
   /**
-   * Registros/información relacionada con la materia (serias con las que
-   * se cursa). El formato exacto aún no está claro; en muestras llega como
-   * listas anidadas de pares [x, y].
+   * ⚠️ NO son créditos (sin confirmar). En las muestras toma 0/1/2/3/9,
+   * sin relación con los créditos reales de la materia (4-5 según el kardex).
+   * Significado real pendiente de confirmar.
    */
-  r: unknown;
+  c: number;
+  /**
+   * ⚠️ Sin confirmar. Siempre `0` en las muestras; significado desconocido.
+   */
+  g: number;
+  m: string; // clave de la materia
+  /**
+   * Nombre de la materia; las materias ya cursadas traen además calificación
+   * y oportunidad mezcladas (`"NOMBRE CALIF OPORTUNIDAD"` o
+   * `"NOMBRE\nCALIF OPORTUNIDAD"`).
+   */
+  t: string;
+  /**
+   * Seriaciones de la materia. Lista de grupos "o": para cursar la materia se
+   * requiere cumplir UNA coordenada de cada grupo no vacío. Formato:
+   * `[[[x,y], ...], [[x,y], ...], ...]`; los grupos vacíos llegan como `[]`.
+   */
+  r: ApiCoordenadas[][];
 }
 export interface ApiMateriaInscripcion {
   mat: string; // clave de la materia
