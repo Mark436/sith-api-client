@@ -1,7 +1,7 @@
 # AGENTS.md — Guía de referencia para agentes
 
 Documento de contexto para agentes/LLMs que trabajen sobre este repositorio.
-Lee esto antes de modificar el código. Refleja el estado **actual** (v3.1.1).
+Lee esto antes de modificar el código. Refleja el estado **actual** (v3.1.2).
 
 > Documentación humana complementaria: [`README.md`](./README.md) (uso público),
 > [`api.md`](./api.md) (funcionamiento interno, glosario y fase de prueba),

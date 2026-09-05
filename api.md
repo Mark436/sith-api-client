@@ -175,9 +175,9 @@ materia expone:
 
 **Auto-acreditables:** las tutorías, actividades complementarias y
 extraescolares (nombre que contiene `TUTORIA`/`COMPLEMENTARIA`/`EXTRAESCOLAR`)
-se fuerzan a `estado = ACREDITADA` (2) **solo si** la API las reporta en
-`FALTA_CURSAR` (0), porque suele reportarlas así aun cuando el alumno ya las
-completó. Un estado no-cero (p. ej. inscripción normal) se respeta.
+se fuerzan a `estado = ACREDITADA` (2) si la API las reporta en
+`FALTA_CURSAR` (0) o `INSCRIPCION_NORMAL` (1), porque suele reportarlas así
+aun cuando el alumno ya las completó. Estados >= 2 se respetan.
 
 ### ⚠️ Fase de prueba
 

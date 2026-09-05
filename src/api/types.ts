@@ -38,7 +38,7 @@ export interface ApiMateriaReticula {
   y: number; // posición vertical / fila (semestre sugerido)
   /**
    * Estado de la materia en la retícula. Código con
-   * significado fijo: 0 = falta cursar, 2 = acreditada, 9 = curso global...
+   * significado fijo: 0 = falta cursar, 2 = acreditada, 7 = curso global...
    * Ver `ESTADO_MATERIA_RETICULA` para la tabla completa de valores.
    */
   c: number;
