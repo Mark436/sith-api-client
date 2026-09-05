@@ -97,14 +97,14 @@ test("mapReticula decodifica los 14 códigos del estado (0-13)", () => {
   );
 });
 
-test("mapReticula fuerza a ACREDITADA las auto-acreditables que vienen en 0", () => {
+test("mapReticula fuerza a ACREDITADA las auto-acreditables que vienen en 0 o 1", () => {
   const ret = mapReticula([
     { x: 1, y: 7, c: 0, g: 0, m: "TUS2010", t: "TUTORIAS I", r: [] },
-    { x: 1, y: 6, c: 0, g: 0, m: "TUS2011", t: "TUTORIAS II", r: [] },
+    { x: 1, y: 6, c: 1, g: 0, m: "TUS2011", t: "TUTORIAS II", r: [] },
     { x: 4, y: 4, c: 0, g: 0, m: "ACC0004", t: "ACTIVIDADES COMPLEMENTARIAS", r: [] },
-    { x: 1, y: 5, c: 0, g: 0, m: "ACC0005", t: "ACTIVIDAD COMPLEMENTARIA 5", r: [] },
+    { x: 1, y: 5, c: 1, g: 0, m: "ACC0005", t: "ACTIVIDAD COMPLEMENTARIA 5", r: [] },
     { x: 2, y: 6, c: 0, g: 0, m: "EXT0001", t: "EXTRAESCOLARES I", r: [] },
-    { x: 2, y: 7, c: 0, g: 0, m: "EXT0002", t: "EXTRAESCOLARES II", r: [] },
+    { x: 2, y: 7, c: 1, g: 0, m: "EXT0002", t: "EXTRAESCOLARES II", r: [] },
   ]);
   for (const materia of ret) {
     assert.equal(materia.estado, ESTADO_MATERIA_RETICULA.ACREDITADA);
@@ -113,17 +113,17 @@ test("mapReticula fuerza a ACREDITADA las auto-acreditables que vienen en 0", ()
   }
 });
 
-test("mapReticula respeta estados no-cero en las auto-acreditables", () => {
+test("mapReticula respeta estados ya acreditados o en curso en las auto-acreditables", () => {
   const ret = mapReticula([
     { x: 4, y: 4, c: 3, g: 0, m: "ACC0004", t: "ACTIVIDADES COMPLEMENTARIAS", r: [] },
-    { x: 2, y: 6, c: 1, g: 0, m: "EXT0001", t: "EXTRAESCOLARES I", r: [] },
+    { x: 2, y: 6, c: 4, g: 0, m: "EXT0001", t: "EXTRAESCOLARES I", r: [] },
   ]);
   assert.equal(ret[0]?.estado, ESTADO_MATERIA_RETICULA.ACREDITADA_SIN_CALIFICACION);
   assert.equal(ret[0]?.codigoEstado, 3);
   assert.equal(ret[0]?.c, 3);
-  assert.equal(ret[1]?.estado, ESTADO_MATERIA_RETICULA.INSCRIPCION_NORMAL);
-  assert.equal(ret[1]?.codigoEstado, 1);
-  assert.equal(ret[1]?.c, 1);
+  assert.equal(ret[1]?.estado, ESTADO_MATERIA_RETICULA.COMPLEMENTARIAS_APROBADAS);
+  assert.equal(ret[1]?.codigoEstado, 4);
+  assert.equal(ret[1]?.c, 4);
 });
 
 test("mapReticula mapea la seriación a grupos de coordenadas y omite los vacíos", () => {

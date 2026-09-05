@@ -1,7 +1,7 @@
 # AGENTS.md — Guía de referencia para agentes
 
 Documento de contexto para agentes/LLMs que trabajen sobre este repositorio.
-Lee esto antes de modificar el código. Refleja el estado **actual** (v3.0.0).
+Lee esto antes de modificar el código. Refleja el estado **actual** (v3.1.1).
 
 > Documentación humana complementaria: [`README.md`](./README.md) (uso público),
 > [`api.md`](./api.md) (funcionamiento interno, glosario y fase de prueba),
@@ -117,7 +117,7 @@ mensajes crudos.
 retrocompatible: mismo valor que `codigoEstado`), `g` (siempre 0, ⚠️ sin confirmar),
 `seriacion: Coordenadas[][]` (grupos "o"; sub-arrays vacíos omitidos). Las
 materias auto-acreditables (tutorías, complementarias, extraescolares) se
-mapean a `ACREDITADA` aunque la API las reporte en estado 0; ver mappers.
+mapean a `ACREDITADA` aunque la API las reporte en estado 0 o 1; ver mappers.
 
 **`Aviso`**: `titulo`, `mensaje`, `tipo` (**string** a propósito; valores conocidos `error`/`warn`/`info`/`success`, no exhaustivos).
 
@@ -146,9 +146,10 @@ Detalles de `mapReticula` (importante para futuros ajustes):
   (fase de prueba).
 - **Auto-acreditables** (`Materias auto-acreditables` en el mapper): tutorías,
   actividades complementarias y extraescolares (nombre contiene
-  `TUTORIA`/`COMPLEMENTARIA`/`EXTRAESCOLAR`) se fuerzan a `ACREDITADA` solo si
-  el estado viene en `FALTA_CURSAR` (0), porque la API suele reportarlas así aun
-  cuando el alumno ya las completó. Estado no-cero se respeta.
+  `TUTORIA`/`COMPLEMENTARIA`/`EXTRAESCOLAR`) se fuerzan a `ACREDITADA` si
+  el estado viene en `FALTA_CURSAR` (0) o `INSCRIPCION_NORMAL` (1), porque la
+  API suele reportarlas así aun cuando el alumno ya las completó. Estados
+  >= 3 se respetan.
 - `r` es `ApiCoordenadas[][][]` donde cada sub-array es un grupo "o"; los vacíos se omiten.
 
 `mapTodo` guard (v3.0.0): exige `data` objeto no-null con `data.al` objeto y

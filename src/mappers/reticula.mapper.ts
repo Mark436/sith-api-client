@@ -46,7 +46,7 @@ function mapSeriacion(r: ApiCoordenadas[][]): Coordenadas[][] {
 /**
  * Materias que se consideran "auto-acreditables": tutorías, actividades
  * complementarias y extraescolares. El API suele reportarlas en estado 0
- * (falta cursar) aun cuando el alumno ya las completó.
+ * (falta cursar) o 1 (inscripción normal) aun cuando el alumno ya las completó.
  */
 const MATERIAS_AUTO_ACREDITADAS = ["TUTORIA", "COMPLEMENTARIA", "EXTRAESCOLAR"] as const;
 
@@ -85,7 +85,7 @@ export function mapReticula(
   return data.map((materia) => {
     const nombre = mapNombre(materia.t);
     let codigo = materia.c;
-    if (codigo === 0 && esAutoAcreditada(nombre)) {
+    if ((codigo === 0 || codigo === 1) && esAutoAcreditada(nombre)) {
       codigo = 2; // Acreditada
     }
     return {
