@@ -12,6 +12,8 @@ export interface ApiInfoAdicional {
   car: string; // carrera
   sem: number; // semestre actual
   toca: string; // fecha de reinscripción ("YYYY-MM-DD hh:mm:ss", hora local Hermosillo)
+  ini: string; // inicio del periodo de reinscripción ("YYYY-MM-DD hh:mm:ss", hora local Hermosillo)
+  fin: string; // fin del periodo de reinscripción ("YYYY-MM-DD hh:mm:ss", hora local Hermosillo)
   // promedios
   prg: number; // promedio global
   prs: number; // promedio del semestre
@@ -35,9 +37,9 @@ export interface ApiMateriaReticula {
   x: number; // posición horizontal / columna de la materia en la retícula
   y: number; // posición vertical / fila (semestre sugerido)
   /**
-   * ⚠️ NO son créditos (sin confirmar). En las muestras toma 0/1/2/3/9,
-   * sin relación con los créditos reales de la materia (4-5 según el kardex).
-   * Significado real pendiente de confirmar.
+   * Estado de la materia en la retícula. Código con
+   * significado fijo: 0 = falta cursar, 2 = acreditada, 9 = curso global...
+   * Ver `ESTADO_MATERIA_RETICULA` para la tabla completa de valores.
    */
   c: number;
   /**

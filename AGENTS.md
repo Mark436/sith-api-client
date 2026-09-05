@@ -65,10 +65,12 @@ Internamente llama a `mapTodo` (incluye la validación de shape).
 
 ### Re-exports desde la raíz (`src/index.ts`)
 - Errores: `SithError`, `SithNetworkError`, `SithHttpError`, `SithAuthError`, `SithMappingError`.
-- Constante: `TIPO_AVISO` (`ERROR="error"`, `ADVERTENCIA="warn"`, `INFORMACION="info"`).
+- Enums/constantes: `TIPO_AVISO` (`ERROR="error"`, `ADVERTENCIA="warn"`, `INFORMACION="info"`),
+  `ESTADO_MATERIA_RETICULA` (estado legible de la retícula: cadena por código 0-13,
+  ej. 2 = "Acreditada", 7 = "Curso global").
 - Tipos: `Credenciales`, `SithClientOptions`, `DatosAlumno`, `Alumno`, `Aviso`,
   `Adeudos`, `Boleta`, `CalificacionMateria`, `Coordenadas`, `ReticulaMateria`,
-  `ReticulaCalificacion`, `Creditos`, `HorarioDia`, `HorarioMateria`.
+  `ReticulaCalificacion`, `Creditos`, `HorarioDia`, `HorarioMateria`, `PeriodoInscripcion`.
 
 ---
 
@@ -94,6 +96,8 @@ mensajes crudos.
 **`Alumno`**
 - `numeroControl`, `nombre`, `carrera`, `correo`, `telefono` (string)
 - `semestre` (number), `fechaReinscripcion` (ISO con offset fijo `-07:00` Hermosillo)
+- `periodoInscripcion: PeriodoInscripcion { inicio, fin }` (tal cual llega del API,
+  `"YYYY-MM-DD hh:mm:ss"` hora local Hermosillo **sin conversión**; ver `PeriodoInscripcion`)
 - `promedioGeneral`, `promedioSemestral` (number)
 - `boleta: Boleta { periodo, promedio (string), materias: CalificacionMateria[] }`
 - `adeudos: Adeudos { biblioteca, academico, escolar, financiero, administrativo, tieneAdeudos }`
@@ -101,15 +105,19 @@ mensajes crudos.
 - `progreso` (number: % aprobado, derivado de créditos)
 - `creditos: Creditos { totales, faltantes }` (aprobados = totales − faltantes)
 - `horario: HorarioMateria[]` (días sin clase omitidos; tolera `*`/vacío)
-- `reticula: ReticulaMateria[]` **(v3.0.0, fase de prueba)**
+- `reticula: ReticulaMateria[]` **(v3.0.0; `c` confirmado como estado, resto fase de prueba)**
 
 **`HorarioMateria`**: `clave`, `creditos?`, `grupo`, `docente`, `dias: HorarioDia { lunes..sabado? }`.
 
 **`CalificacionMateria`**: `clave`, `nombre`, `calificacion` (**string**, puede ser "" o texto), `claveOportunidad`, `oportunidad`, `creditos` (number).
 
-**`ReticulaMateria`** (fase de prueba): `clave`, `nombre`, `coordenadas {x,y}`,
-`calificacion?: { calificacion?, oportunidad? }`, `c` (⚠️ NO créditos), `g` (siempre 0),
-`seriacion: Coordenadas[][]` (grupos "o"; sub-arrays vacíos omitidos).
+**`ReticulaMateria`** (fase de prueba en `g`): `clave`, `nombre`, `coordenadas {x,y}`,
+`calificacion?: { calificacion?, oportunidad? }`, `codigoEstado` (número; campo crudo `c`),
+`estado` (cadena legible; ver `ESTADO_MATERIA_RETICULA`), `c` (**deprecated**,
+retrocompatible: mismo valor que `codigoEstado`), `g` (siempre 0, ⚠️ sin confirmar),
+`seriacion: Coordenadas[][]` (grupos "o"; sub-arrays vacíos omitidos). Las
+materias auto-acreditables (tutorías, complementarias, extraescolares) se
+mapean a `ACREDITADA` aunque la API las reporte en estado 0; ver mappers.
 
 **`Aviso`**: `titulo`, `mensaje`, `tipo` (**string** a propósito; valores conocidos `error`/`warn`/`info`/`success`, no exhaustivos).
 
@@ -132,7 +140,15 @@ Funciones puras, sin red, sin estado. Un mapper por DTO:
 Detalles de `mapReticula` (importante para futuros ajustes):
 - `nombre`: `t.trim().split(/\s*\d/)[0]` (corta en el primer dígito).
 - `calificacion`: regex `/(\d{2,3}|[0-9]+)\s+([A-Z]{2})$/` sobre `t`; `undefined` si no cursa.
-- `c`/`g` se conservan crudos **sin interpretar** (fase de prueba).
+- `c` se conserva crudo como `codigoEstado`; `estado` decodifica el código a
+  la cadena legible (enum `ESTADO_MATERIA_RETICULA`, lista oficial 0-13).
+  `c` queda deprecado (retrocompatible) y `g` sigue **sin interpretar**
+  (fase de prueba).
+- **Auto-acreditables** (`Materias auto-acreditables` en el mapper): tutorías,
+  actividades complementarias y extraescolares (nombre contiene
+  `TUTORIA`/`COMPLEMENTARIA`/`EXTRAESCOLAR`) se fuerzan a `ACREDITADA` solo si
+  el estado viene en `FALTA_CURSAR` (0), porque la API suele reportarlas así aun
+  cuando el alumno ya las completó. Estado no-cero se respeta.
 - `r` es `ApiCoordenadas[][][]` donde cada sub-array es un grupo "o"; los vacíos se omiten.
 
 `mapTodo` guard (v3.0.0): exige `data` objeto no-null con `data.al` objeto y
@@ -143,9 +159,10 @@ Detalles de `mapReticula` (importante para futuros ajustes):
 ## Payload crudo (glosario clave, ver `api.md` para el completo)
 
 - top: `al` (alumno), `lmsg` (avisos), `tkn` (JWT), `rol`.
-- `infadic`: `nom`, `car`, `sem`, `toca`, `prg`/`prs`, `tot`/`cfa`, `abi/aca/aes/afi/ava`.
+- `infadic`: `nom`, `car`, `sem`, `toca` (fecha de reinscripción), `ini`/`fin`
+  (inicio/fin del periodo de reinscripción), `prg`/`prs`, `tot`/`cfa`, `abi/aca/aes/afi/ava`.
 - `gins[]`: `mat`, `cr` (a veces string), `gpo`, `mape`/`mnom`, `lu/ma/mi/ju/vi/sa`.
-- `ret[]`: `x`/`y`, `m`, `t` (`"NOMBRE\nCALIF OPORTUNIDAD"` o separado por espacio), `r`, `c`, `g`.
+- `ret[]`: `x`/`y`, `m`, `t` (`"NOMBRE\nCALIF OPORTUNIDAD"` o separado por espacio), `r`, `c` (estado; ver `ESTADO_MATERIA_RETICULA`), `g` (siempre 0, ⚠️ sin confirmar).
 - `kdx[]` kardex histórico (llega vacío o igual que `boleta`); `banco.mp_order` = número de control.
 
 ---
@@ -183,5 +200,6 @@ npm run prepublishOnly  # build + test
 ## Pendientes / backlog (resumen, detalle en `PLAN.md`)
 
 - ✅ Bloque 4 (retícula, logout inmutable, validación de shape, limpiezas) — hecho en v3.0.0.
-- ⏳ Confirmar significado real de `c` y `g` de la retícula y el parseo de `t` (fase de prueba).
+- ✅ `c` de la retícula confirmado como **estado** (`ESTADO_MATERIA_RETICULA`).
+- ⏳ Confirmar significado real de `g` de la retícula y el parseo de `t` (fase de prueba).
 - ⏳ Backlog futuro: unificar tipos inconsistentes, timeout/`AbortSignal`, `fetch` inyectable, retry.

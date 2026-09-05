@@ -107,7 +107,7 @@ grafo mapeado:
 **`Alumno`**
 
 - Identidad: `numeroControl`, `nombre`, `carrera`, `correo`, `telefono`,
-  `semestre`, `fechaReinscripcion`
+  `semestre`, `fechaReinscripcion`, `periodoInscripcion { inicio, fin }`
 - Académicas: `promedioGeneral` (`number`), `promedioSemestral` (`number`),
   `boleta { periodo, promedio, materias: CalificacionMateria[] }`
 - `CalificacionMateria`: `clave`, `nombre`, `calificacion` (**string**, puede
@@ -137,6 +137,11 @@ grafo mapeado:
 - `fechaReinscripcion` llega ISO con offset fijo `-07:00`: Hermosillo es
   UTC-7 todo el año desde 2022, así que es correcto, pero está hardcodeado
   en el mapper.
+- `periodoInscripcion { inicio, fin }` se expone **tal cual** lo manda el API
+  (`"YYYY-MM-DD hh:mm:ss"`, hora local de Hermosillo): **sin conversión** ni
+  offset. El API no especifica zona horaria; la hora ya es de Hermosillo.
+  A diferencia de `fechaReinscripcion` (que sí se formatea a ISO con `-07:00`),
+  aquí se conserva el string crudo.
 - `Aviso.tipo` es `string` **a propósito**: los valores conocidos hasta hoy
   son `"error"`, `"warn"`, `"info"` (y `"success"` fuera del login, p. ej.
   en inscripción), pero la lista NO es exhaustiva; se mantiene abierto
@@ -155,13 +160,27 @@ materia expone:
 - `seriacion: Coordenadas[][]` → grupos "o" de `r`. Para cursar la materia se
   requiere aprobar UNA coordenada de cada grupo no vacío; los grupos vacíos se
   omiten.
-- `c` y `g` → campos crudos conservados tal cual.
+- `codigoEstado` → código numérico del estado (campo crudo `c`).
+- `estado` → **estado** de la materia como cadena legible, decodificado de
+  `codigoEstado` por el mapper. Lista oficial del API (0-13, en
+  `ESTADO_MATERIA_RETICULA`, re-exportada desde la raíz): 0 Falta cursar,
+  1 Inscripción normal, 2 Acreditada, 3 Acreditada sin calificación,
+  4 Complementarias aprobadas, 5 Repetición por cursar, 6 Inscripción en
+  repetición, 7 Curso global, 8 A especial, 9 Inscripción en especial,
+  10 Especial reprobado, 11 Inscrito en curso normal, 12 Inscrito en curso de
+  repetición, 13 Inscrito en curso de especial.
+- `c` → **deprecated** (retrocompatible): mismo valor numérico que
+  `codigoEstado`; usa `estado` (texto) o `codigoEstado` (código) en su lugar.
+- `g` → campo crudo conservado tal cual.
+
+**Auto-acreditables:** las tutorías, actividades complementarias y
+extraescolares (nombre que contiene `TUTORIA`/`COMPLEMENTARIA`/`EXTRAESCOLAR`)
+se fuerzan a `estado = ACREDITADA` (2) **solo si** la API las reporta en
+`FALTA_CURSAR` (0), porque suele reportarlas así aun cuando el alumno ya las
+completó. Un estado no-cero (p. ej. inscripción normal) se respeta.
 
 ### ⚠️ Fase de prueba
 
-- **`c` NO son créditos.** En las muestras toma `0/1/2/3/9`, mientras que los
-  créditos reales de esas mismas materias (según el kardex) son 4-5. Su
-  significado real no está confirmado y el campo se conserva sin interpretar.
 - **`g`** llega siempre `0` en las muestras; significado por confirmar.
 - **Parseo de `t`:** separar nombre de calificación/oportunidad se basa en
   muestras (separador `\n` o espacio) y puede requerir ajustes.
@@ -174,7 +193,8 @@ observación; lo no confirmado se marca).
 - Top level: `al` (alumno), `lmsg` (avisos), `tkn` (token JWT),
   `rol` (`"al"` = alumno, visto en otras rutas).
 - `infadic`: `nom` nombre, `car` carrera, `sem` semestre, `toca` fecha de
-  reinscripción, `prg`/`prs` promedios global/semestral, `tot`/`cfa`
+  reinscripción, `ini`/`fin` inicio/fin del periodo de reinscripción,
+  `prg`/`prs` promedios global/semestral, `tot`/`cfa`
   créditos totales/faltantes, `abi/aca/aes/afi/ava` adeudos por área
   (`"N"` = sin adeudo).
 - `gins[]` (materias inscritas): `mat` clave, `cr` créditos (¡a veces
@@ -184,8 +204,9 @@ observación; lo no confirmado se marca).
 - `ret[]` (retícula): `x`/`y` coordenadas (columna/fila-semestre), `m`
   clave, `t` `"NOMBRE\nCALIF OPORTUNIDAD"` (o separado por espacio; si no se
   cursó solo el nombre), `r` seriación `[[[x,y], ...], ...]` (grupos "o";
-  los vacíos llegan como `[]`). `c` NO son créditos (sin confirmar) y `g`
-  es siempre `0`; ver "Retícula" arriba.
+  los vacíos llegan como `[]`). `c` es el **estado** de la materia
+  (ver `ESTADO_MATERIA_RETICULA`) y `g` es siempre `0` (sin definir); ver
+  "Retícula" arriba.
 - `kdx[]` kardex histórico (en muestras llega vacío o igual que `boleta`);
   `boleta.prom` promedio del periodo como string; `banco.mp_order`
   curiosamente coincide con el número de control (así se obtiene
@@ -197,11 +218,12 @@ observación; lo no confirmado se marca).
    credenciales. Candidato a mejora del backend.
 2. **Endpoint oficial en HTTP plano** con base configurable pero sin HTTPS
    nativo; usar proxy propio si hace falta TLS.
-3. **Retícula mapeada pero en fase de prueba**: `c` (no créditos), `g` y el
-   parseo de `t` siguen sin confirmar; ver "Retícula" arriba.
+3. **Retícula mapeada pero parcialmente en fase de prueba**: `c` ya está
+   confirmado como estado (`ESTADO_MATERIA_RETICULA`); `g` y el parseo de `t`
+   siguen sin confirmar; ver "Retícula" arriba.
 4. **`kdx` y `banco` poco explorados**: se usan mínimamente (boleta actual,
    número de control); puede haber más información aprovechable.
-5. Severidades de avisos y campos `ret[].{c,g}` siguen bajo observación;
+5. Severidades de avisos y el campo `ret[].g` siguen bajo observación;
    documentar hallazgos aquí.
 
 ## Pruebas

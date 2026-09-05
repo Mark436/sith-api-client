@@ -3,6 +3,7 @@ import type { Boleta } from "./Boleta.js";
 import type { Creditos } from "./Creditos.js";
 import type { HorarioMateria } from "./Horario.js";
 import type { ReticulaMateria } from "./Materias.js";
+import type { PeriodoInscripcion } from "./PeriodoInscripcion.js";
 
 /**
  * Información del alumno solicitado
@@ -15,6 +16,8 @@ export interface Alumno {
   telefono: string;
   semestre: number;
   fechaReinscripcion: string;
+  /** Periodo de reinscripción (inicio y fin), tal cual el API lo reporta. */
+  periodoInscripcion: PeriodoInscripcion;
   promedioGeneral: number;
   promedioSemestral: number;
   boleta: Boleta;

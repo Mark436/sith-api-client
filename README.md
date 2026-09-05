@@ -99,7 +99,7 @@ Obtiene la información del alumno, su horario inscrito y sus avisos a partir de
 
 **Retorna:** `Promise<{ alumno, avisos }>`
 
-`alumno.horario` contiene las materias inscritas con su horario semanal (`dias.lunes...sabado`, omitiendo los días sin clase). `alumno.reticula` contiene las materias del plan de estudios (la retícula; ⚠️ en fase de prueba, ver [`api.md`](./api.md)). Cada aviso contiene `titulo`, `mensaje` y `tipo`. Los tipos conocidos son `error`, `warn` e `info`, pero el API puede devolver otros (p. ej. `success`), por eso `tipo` es un string abierto.
+`alumno.horario` contiene las materias inscritas con su horario semanal (`dias.lunes...sabado`, omitiendo los días sin clase). `alumno.reticula` contiene las materias del plan de estudios; cada materia expone su `estado` (cadena legible, p. ej. `ESTADO_MATERIA_RETICULA.ACREDITADA`), su código numérico en `codigoEstado` y el campo `c` deprecado (retrocompatible; ver [`api.md`](./api.md)). `alumno.periodoInscripcion` expone el inicio y fin del periodo de reinscripción tal cual el API lo reporta (hora local de Hermosillo, sin conversión). Cada aviso contiene `titulo`, `mensaje` y `tipo`. Los tipos conocidos son `error`, `warn` e `info`, pero el API puede devolver otros (p. ej. `success`), por eso `tipo` es un string abierto.
 
 **Errores:** lanza subclases de `SithError`:
 

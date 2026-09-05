@@ -21,6 +21,15 @@ test("mapAlumno conviende la fecha de reinscripción al formato ISO con offset d
   assert.equal(alumno.fechaReinscripcion, "2026-01-05T08:00:00-07:00");
 });
 
+test("mapAlumno expone el periodo de inscripción sin conversión", () => {
+  const alumno = mapAlumno(baseApiTodo.al);
+
+  assert.deepEqual(alumno.periodoInscripcion, {
+    inicio: "2025-12-28 08:00:00",
+    fin: "2026-01-09 23:59:59",
+  });
+});
+
 test("mapAlumno marca tieneAdeudos en falso cuando todas las áreas son N", () => {
   const alumno = mapAlumno(baseApiTodo.al);
 

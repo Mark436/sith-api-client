@@ -2,6 +2,7 @@ import type { ApiAlumno } from "../api/types.js";
 import type { Adeudos } from "../dto/Adeudos.js";
 import type { Alumno } from "../dto/Alumno.js";
 import type { Creditos } from "../dto/Creditos.js";
+import type { PeriodoInscripcion } from "../dto/PeriodoInscripcion.js";
 import { mapBoleta } from "./boleta.mapper.js";
 import { mapHorario } from "./horario.mapper.js";
 import { mapReticula } from "./reticula.mapper.js";
@@ -47,6 +48,15 @@ function calcularProgreso(creditos: Creditos): number {
   return ((creditos.totales - creditos.faltantes) / creditos.totales) * 100;
 }
 
+function mapPeriodoInscripcion(data: ApiAlumno): PeriodoInscripcion {
+  // Las fechas llegan en hora local de Hermosillo sin especificar zona;
+  // se exponen tal cual, sin conversión.
+  return {
+    inicio: data.infadic.ini,
+    fin: data.infadic.fin,
+  };
+}
+
 export function mapAlumno(data: ApiAlumno): Alumno {
   const { infadic, banco, correo, telefono, boleta } = data;
   const adeudos = mapAdeudos(data);
@@ -60,6 +70,7 @@ export function mapAlumno(data: ApiAlumno): Alumno {
     telefono,
     semestre: Number(infadic.sem),
     fechaReinscripcion: convertirFechaHermosillo(infadic.toca),
+    periodoInscripcion: mapPeriodoInscripcion(data),
     promedioGeneral: Number(infadic.prg),
     promedioSemestral: Number(infadic.prs),
     boleta: mapBoleta(boleta),

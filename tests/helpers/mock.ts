@@ -16,6 +16,8 @@ export const baseApiTodo: ApiTodo = {
       car: "INGENIERIA EN SISTEMAS COMPUTACIONALES",
       sem: 1,
       toca: "2026-01-05 08:00:00",
+      ini: "2025-12-28 08:00:00",
+      fin: "2026-01-09 23:59:59",
       prg: 90,
       prs: 85,
       tot: 300,

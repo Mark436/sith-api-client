@@ -20,9 +20,10 @@ Se eligió la **opción 1 (mapearla)**. Creé `src/mappers/reticula.mapper.ts`,
 expuse `alumno.reticula` y resolví los campos de la retícula:
 
 - `x`, `y` → `coordenadas` (columna, semestre/fila).
-- `c` → **NO son créditos** (confirmado contra `kdx`: las mismas materias
-  valen 4-5 créditos pero `c` toma 0/1/2/3/9). Se conserva crudo, **sin
-  interpretar** (en fase de prueba).
+- `c` → **estado** de la materia. Confirmado; el código se conserva crudo
+  como `codigoEstado` y se decodifica a la cadena legible `estado` con el
+  enum `ESTADO_MATERIA_RETICULA` (lista oficial 0-13: 0 falta cursar,
+  2 acreditada, 7 curso global, …).
 - `g` → siempre `0` en el sample; conservado crudo (en fase de prueba).
 - `m` → `clave`.
 - `t` → `"NOMBRE\nCALIF OPORTUNIDAD"` o `"NOMBRE CALIF OPORTUNIDAD"`; el
@@ -34,8 +35,9 @@ expuse `alumno.reticula` y resolví los campos de la retícula:
 Es un **cambio breaking** de la API pública (nueva propiedad `reticula` en
 `Alumno`) → **bump mayor a 3.0.0**.
 
-**Fallos que quedaron en fase de prueba:** significado real de `c` y `g`, y el
-parseo de `t` (separador `\n` vs espacio).
+**Fallos que quedaron en fase de prueba:** significado real de `g` y el
+parseo de `t` (separador `\n` vs espacio). El significado de `c` quedó
+confirmado como estado (`ESTADO_MATERIA_RETICULA`).
 
 **Archivos tocados:** `src/dto/Materias.ts`, `src/dto/Alumno.ts`,
 `src/mappers/alumno.mapper.ts`, `src/mappers/reticula.mapper.ts` (nuevo),
@@ -59,7 +61,8 @@ payload incompleto.
 ### 4d. Limpiezas varias ✅ (hecho salvo fases de prueba)
 
 - **4d1 — DTO `Materias.ts`:** quitados los comentarios de incertidumbre y
-  alineado el estilo. `c`/`g` quedan conservados crudos y marcados en fase de
+  alineado el estilo. `c`/`g` quedan conservados crudos; `c` quedó confirmado
+  como estado (`ESTADO_MATERIA_RETICULA`) y solo `g` sigue en fase de
   prueba. `nombre` ya no mezcla calificación/oportunidad (ver 4a).
 - **4d2 — `tsconfig.json`:** `include: ["src/**/*.ts"]`, `exclude` simplificado
   a `["node_modules", "dist", "src/test.ts"]` (este último porque
