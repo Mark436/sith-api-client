@@ -9,7 +9,7 @@ export interface CalificacionMateria {
   creditos: number;
 }
 
-/** Coordenada de una materia dentro de la retícula (columna, semestre/fila). */
+/** Coordenada de una materia dentro de la retícula (x = semestre, y = columna dentro del semestre). */
 export interface Coordenadas {
   x: number;
   y: number;

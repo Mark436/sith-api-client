@@ -152,7 +152,7 @@ grafo mapeado:
 Desde v3.0.0 la retícula (`ret[]`) se mapea a `ReticulaMateria[]`. Cada
 materia expone:
 
-- `coordenadas { x, y }` → columna y fila/semestre en la retícula.
+- `coordenadas { x, y }` → `x` es el semestre y `y` la columna dentro de él.
 - `clave` (`m`) y `nombre` (primera parte de `t`).
 - `calificacion? { calificacion?, oportunidad? }`: solo si la materia ya fue
   cursada. El texto crudo `t` mezcla `"NOMBRE CALIF OPORTUNIDAD"` (o separado
@@ -201,7 +201,7 @@ observación; lo no confirmado se marca).
   string!), `gpo` grupo (`*` sin definir), `mape`/`mnom` apellidos/nombres
   docente, `lu/ma/mi/ju/vi/sa` horarios `"hh:mm-hh:mm salón\n"` (vacío =
   sin clase).
-- `ret[]` (retícula): `x`/`y` coordenadas (columna/fila-semestre), `m`
+- `ret[]` (retícula): `x`/`y` coordenadas (`x` = semestre, `y` = columna), `m`
   clave, `t` `"NOMBRE\nCALIF OPORTUNIDAD"` (o separado por espacio; si no se
   cursó solo el nombre), `r` seriación `[[[x,y], ...], ...]` (grupos "o";
   los vacíos llegan como `[]`). `c` es el **estado** de la materia

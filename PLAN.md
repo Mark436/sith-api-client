@@ -19,7 +19,7 @@ en otra sesión; **no hay cambios aplicados por este documento**.
 Se eligió la **opción 1 (mapearla)**. Creé `src/mappers/reticula.mapper.ts`,
 expuse `alumno.reticula` y resolví los campos de la retícula:
 
-- `x`, `y` → `coordenadas` (columna, semestre/fila).
+- `x`, `y` → `coordenadas` (`x` = semestre, `y` = columna).
 - `c` → **estado** de la materia. Confirmado; el código se conserva crudo
   como `codigoEstado` y se decodifica a la cadena legible `estado` con el
   enum `ESTADO_MATERIA_RETICULA` (lista oficial 0-13: 0 falta cursar,

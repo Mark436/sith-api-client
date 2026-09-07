@@ -34,8 +34,8 @@ export interface ApiInfoAdicional {
 export type ApiCoordenadas = [number, number];
 
 export interface ApiMateriaReticula {
-  x: number; // posición horizontal / columna de la materia en la retícula
-  y: number; // posición vertical / fila (semestre sugerido)
+  x: number; // semestre sugerido de la materia en la retícula
+  y: number; // columna / posición horizontal dentro del semestre
   /**
    * Estado de la materia en la retícula. Código con
    * significado fijo: 0 = falta cursar, 2 = acreditada, 7 = curso global...
