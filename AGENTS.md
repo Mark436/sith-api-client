@@ -118,6 +118,10 @@ retrocompatible: mismo valor que `codigoEstado`), `g` (siempre 0, ⚠️ sin con
 `seriacion: Coordenadas[][]` (grupos "o"; sub-arrays vacíos omitidos). Las
 materias auto-acreditables (tutorías, complementarias, extraescolares) se
 mapean a `ACREDITADA` aunque la API las reporte en estado 0 o 1; ver mappers.
+⚠️ La retícula trae el **plan completo con TODAS las especialidades**, sin
+campo crudo que distinga especialidad por materia; el portal web filtra por
+la especialidad del alumno (`infadic.esp`/`nes`, no expuestos). No filtrar
+por nombre.
 
 **`Aviso`**: `titulo`, `mensaje`, `tipo` (**string** a propósito; valores conocidos `error`/`warn`/`info`/`success`, no exhaustivos).
 
@@ -162,6 +166,8 @@ Detalles de `mapReticula` (importante para futuros ajustes):
 - top: `al` (alumno), `lmsg` (avisos), `tkn` (JWT), `rol`.
 - `infadic`: `nom`, `car`, `sem`, `toca` (fecha de reinscripción), `ini`/`fin`
   (inicio/fin del periodo de reinscripción), `prg`/`prs`, `tot`/`cfa`, `abi/aca/aes/afi/ava`.
+  También `cla`/`pln` (clave/nombre del plan) y `esp`/`nes` (clave/nombre de
+  la especialidad del alumno); ver "La retícula trae el plan completo".
 - `gins[]`: `mat`, `cr` (a veces string), `gpo`, `mape`/`mnom`, `lu/ma/mi/ju/vi/sa`.
 - `ret[]`: `x`/`y`, `m`, `t` (`"NOMBRE\nCALIF OPORTUNIDAD"` o separado por espacio), `r`, `c` (estado; ver `ESTADO_MATERIA_RETICULA`), `g` (siempre 0, ⚠️ sin confirmar).
 - `kdx[]` kardex histórico (llega vacío o igual que `boleta`); `banco.mp_order` = número de control.
@@ -203,4 +209,7 @@ npm run prepublishOnly  # build + test
 - ✅ Bloque 4 (retícula, logout inmutable, validación de shape, limpiezas) — hecho en v3.0.0.
 - ✅ `c` de la retícula confirmado como **estado** (`ESTADO_MATERIA_RETICULA`).
 - ⏳ Confirmar significado real de `g` de la retícula y el parseo de `t` (fase de prueba).
+- ⏳ La retícula trae el plan completo (todas las especialidades) y la API no
+  distingue especialidad por materia (ver nota en `ReticulaMateria`); evaluar a
+  futuro exponer `infadic.esp`/`nes` en el DTO.
 - ⏳ Backlog futuro: unificar tipos inconsistentes, timeout/`AbortSignal`, `fetch` inyectable, retry.

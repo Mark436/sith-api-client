@@ -94,6 +94,13 @@ deprecar los viejos, o bump mayor.
 
 ### Extensibilidad
 
+- **Especialidad de la retícula:** `ret[]` trae el plan completo con las
+  materias de **todas las especialidades**, sin discriminador por materia;
+  el portal web filtra por la especialidad del alumno (`infadic.esp`/`nes`),
+  pero la correspondencia clave → especialidad no viaja en el payload. Hoy
+  no se expone nada; candidato futuro: exponer `esp`/`nes` en `Alumno`
+  (additivo) y documentar que el filtro por especialidad queda del lado del
+  consumidor. No depender del nombre de la materia.
 - **Timeout + `AbortSignal`:** hoy no hay; un `fetch` colgado deja el `await`
   infinito. Añadir `timeoutMs`/`signal` a `SithClientOptions`.
 - **`fetch` inyectable:** opción `fetch` en el constructor para testing,

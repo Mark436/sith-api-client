@@ -173,6 +173,16 @@ materia expone:
   `codigoEstado`; usa `estado` (texto) o `codigoEstado` (código) en su lugar.
 - `g` → campo crudo conservado tal cual.
 
+**El payload trae el plan completo (`ret[]`):** la retícula incluye las
+materias de **todas las especialidades** del plan, no solo las de la
+especialidad del alumno. El API no expone en `ret[]` ningún campo que
+indique la especialidad de cada materia (solo `x/y/c/g/m/t/r`), así que
+`alumno.reticula` mezcla especialidades. El portal web de SITH filtra la
+vista por la especialidad del alumno (`infadic.esp`/`nes`), pero esa
+correspondencia clave-de-materia → especialidad **no viaja en el payload**
+(y de hecho `esp`/`nes` no se exponen en el DTO actualmente). **No dependas
+del nombre de la materia para filtrar.**
+
 **Auto-acreditables:** las tutorías, actividades complementarias y
 extraescolares (nombre que contiene `TUTORIA`/`COMPLEMENTARIA`/`EXTRAESCOLAR`)
 se fuerzan a `estado = ACREDITADA` (2) si la API las reporta en
@@ -196,7 +206,11 @@ observación; lo no confirmado se marca).
   reinscripción, `ini`/`fin` inicio/fin del periodo de reinscripción,
   `prg`/`prs` promedios global/semestral, `tot`/`cfa`
   créditos totales/faltantes, `abi/aca/aes/afi/ava` adeudos por área
-  (`"N"` = sin adeudo).
+  (`"N"` = sin adeudo). También llegan `cla` (clave del plan, p. ej.
+  `ISIC-2010-224`), `pln` (nombre del plan), `esp` (clave de la
+  especialidad del alumno, p. ej. `104E`) y `nes` (nombre de la
+  especialidad, p. ej. `SISTEMAS PARA CIENCIAS DE DATOS`) — estos cuatro
+  **no se exponen en el DTO** hoy; ver la nota en "Retícula".
 - `gins[]` (materias inscritas): `mat` clave, `cr` créditos (¡a veces
   string!), `gpo` grupo (`*` sin definir), `mape`/`mnom` apellidos/nombres
   docente, `lu/ma/mi/ju/vi/sa` horarios `"hh:mm-hh:mm salón\n"` (vacío =
@@ -225,6 +239,12 @@ observación; lo no confirmado se marca).
    número de control); puede haber más información aprovechable.
 5. Severidades de avisos y el campo `ret[].g` siguen bajo observación;
    documentar hallazgos aquí.
+6. **Especialidad no distinguible en la retícula.** `ret[]` trae las materias
+   de todas las especialidades del plan sin discriminador por materia; la
+   correspondencia clave-de-materia → especialidad (que el portal web sí
+   aplica, según `infadic.esp`/`nes`) no viaja en el payload. Tampoco se
+   exponen `esp`/`nes` en el DTO. Candidato futuro: exponer la especialidad
+   del alumno en `Alumno`.
 
 ## Pruebas
 
