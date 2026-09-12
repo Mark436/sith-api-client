@@ -36,8 +36,8 @@ export interface ReticulaCalificacion {
  * Materia del plan de estudios dentro de la retícula.
  *
  * `estado` es el estado de la materia (confirmado; ver
- * `ESTADO_MATERIA_RETICULA`). ⚠️ Fase de prueba: el campo `g` sigue sin
- * confirmar (siempre `0` en las muestras).
+ * `ESTADO_MATERIA_RETICULA`). ⚠️ Fase de prueba: el parseo de la calificación
+ * sigue pendiente de confirmar.
  */
 export interface ReticulaMateria {
   /** Clave de la materia (`m`). */
@@ -53,12 +53,15 @@ export interface ReticulaMateria {
   /** Estado legible de la materia. Ver `ESTADO_MATERIA_RETICULA`. */
   estado: ESTADO_MATERIA_RETICULA;
   /**
-   * @deprecated Mantenido por retrocompatibilidad; usa `estado` (texto) o
-   * `codigoEstado` (código). Corresponde al campo crudo `c` del API.
+   * Claves de las materias prerrequisito (anteriores en la seriación).
+   * Derivadas de `r` (coordenadas -> claves via Map).
    */
-  c: number;
-  /** ⚠️ Fase de prueba: siempre `0` en las muestras; significado por confirmar. */
-  g: number;
+  anteriores: string[];
+  /**
+   * Claves de las materias que tienen a esta como prerrequisito (siguientes en la seriación).
+   * Índice inverso construido a partir de `r` de todas las materias.
+   */
+  siguientes: string[];
   /**
    * Seriaciones de la materia (`r`). Cada grupo "o" es uno de los sub-arrays:
    * para cursar esta materia se requiere aprobar UNA de las coordenadas
@@ -68,9 +71,22 @@ export interface ReticulaMateria {
 }
 
 /**
+ * Matriz 2D de la retícula por semestre.
+ * `semestres[0]` = 1er semestre, `semestres[1]` = 2do semestre, etc.
+ * Los semestres sin materias son arrays vacíos `[]`.
+ */
+export type SemestresReticula = ReticulaMateria[][];
+
+/**
+ * Mapa de acceso directo a materias por su clave.
+ * Permite lookup O(1): `reticulaMap.get("ACF0905")`.
+ */
+export type ReticulaMap = Map<string, ReticulaMateria>;
+
+/**
  * Estado de la materia en la retícula (campo `c` del API). Cadena legible;
- * el código numérico original se conserva en `ReticulaMateria.codigoEstado`
- * (y en `c`, deprecado). Lista oficial de estados (0-13) en el orden del API.
+ * el código numérico original se conserva en `ReticulaMateria.codigoEstado`.
+ * Lista oficial de estados (0-13) en el orden del API.
  */
 export enum ESTADO_MATERIA_RETICULA {
   /** 0 — Falta cursar */

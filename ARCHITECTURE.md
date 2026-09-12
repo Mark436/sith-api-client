@@ -102,7 +102,8 @@ DatosAlumno
 │   ├─ creditos      : totales, faltantes
 │   ├─ adeudos       : 5 áreas ("N" = sin adeudo) + tieneAdeudos
 │   ├─ horario       : HorarioMateria[] (días sin clase omitidos)
-│   └─ reticula      : ReticulaMateria[] (fase de prueba; ver 4a en PLAN.md)
+│   ├─ semestres     : ReticulaMateria[][] (matriz 2D: semestres[0] = 1er semestre)
+│   └─ reticulaMap   : Map<string, ReticulaMateria> (acceso O(1) por clave)
 └─ avisos: Aviso[] { titulo, mensaje, tipo }
 ```
 

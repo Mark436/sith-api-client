@@ -4,6 +4,8 @@ import type {
   Coordenadas,
   ReticulaCalificacion,
   ReticulaMateria,
+  ReticulaMap,
+  SemestresReticula,
 } from "../dto/Materias.js";
 
 function mapCoordenadas(coordenada: ApiCoordenadas): Coordenadas {
@@ -40,7 +42,7 @@ function mapCalificacion(t: string): ReticulaCalificacion | undefined {
 function mapSeriacion(r: ApiCoordenadas[][]): Coordenadas[][] {
   return r
     .filter((grupo) => grupo.length > 0)
-    .map((grupo) => grupo.map(mapCoordenadas));
+    .map((grupo): Coordenadas[] => grupo.map((c) => mapCoordenadas(c)));
 }
 
 /**
@@ -76,6 +78,109 @@ const ESTADOS_POR_CODIGO: Record<number, ESTADO_MATERIA_RETICULA> = {
   13: ESTADO_MATERIA_RETICULA.INSCRITO_EN_CURSO_DE_ESPECIAL,
 };
 
+interface MateriaConIndices {
+  materia: ReticulaMateria;
+  coordenadasPrerrequisitos: ApiCoordenadas[][];
+}
+
+/**
+ * Mapea la retícula cruda a una estructura organizada:
+ * - Matriz 2D por semestre (semestres[0] = 1er semestre)
+ * - Map por clave para acceso directo O(1)
+ * - Cada materia incluye `anteriores` y `siguientes` (claves de prerrequisitos/dependientes)
+ */
+export function mapReticulaEstructurada(
+  data: ApiMateriaReticula[] | undefined,
+): { semestres: SemestresReticula; mapa: ReticulaMap } {
+  if (!data || data.length === 0) {
+    return { semestres: [], mapa: new Map() };
+  }
+
+  // PASADA 1: Crear materias base, agrupar por semestre, construir Map coordenada->clave
+  const mapa = new Map<string, ReticulaMateria>();
+  const coordenadaAClave = new Map<string, string>();
+  const materiasPorSemestre = new Map<number, ReticulaMateria[]>();
+  let maxSemestre = 0;
+
+  const materiasConIndices: MateriaConIndices[] = [];
+
+  for (const m of data) {
+    const nombre = mapNombre(m.t);
+    let codigo = m.c;
+    if ((codigo === 0 || codigo === 1) && esAutoAcreditada(nombre)) {
+      codigo = 2;
+    }
+
+    const coordenadas: Coordenadas = { x: m.x, y: m.y };
+    const clave = m.m.trim();
+
+    const materia: ReticulaMateria = {
+      clave,
+      nombre,
+      coordenadas,
+      calificacion: mapCalificacion(m.t),
+      codigoEstado: codigo,
+      estado: ESTADOS_POR_CODIGO[codigo] ?? (String(codigo) as ESTADO_MATERIA_RETICULA),
+      anteriores: [],
+      siguientes: [],
+      seriacion: mapSeriacion(m.r ?? []),
+    };
+
+    mapa.set(clave, materia);
+    coordenadaAClave.set(`${m.x},${m.y}`, clave);
+
+    if (!materiasPorSemestre.has(m.x)) {
+      materiasPorSemestre.set(m.x, []);
+    }
+    materiasPorSemestre.get(m.x)!.push(materia);
+
+    if (m.x > maxSemestre) {
+      maxSemestre = m.x;
+    }
+
+    materiasConIndices.push({
+      materia,
+      coordenadasPrerrequisitos: m.r ?? [],
+    });
+  }
+
+  // PASADA 2: Resolver anteriores/siguientes usando el Map de coordenadas
+  for (const { materia, coordenadasPrerrequisitos } of materiasConIndices) {
+    const anterioresSet = new Set<string>();
+
+    for (const grupo of coordenadasPrerrequisitos) {
+      for (const coord of grupo) {
+        const clavePrerreq = coordenadaAClave.get(`${coord[0]},${coord[1]}`);
+        if (clavePrerreq && clavePrerreq !== materia.clave) {
+          anterioresSet.add(clavePrerreq);
+        }
+      }
+    }
+
+    materia.anteriores = Array.from(anterioresSet);
+
+    // Construir índice inverso: para cada prerrequisito, agregar esta materia como "siguiente"
+    for (const clavePrerreq of anterioresSet) {
+      const prerreq = mapa.get(clavePrerreq);
+      if (prerreq && !prerreq.siguientes.includes(materia.clave)) {
+        prerreq.siguientes.push(materia.clave);
+      }
+    }
+  }
+
+  // Construir matriz 2D: semestres[0] = semestre 1, etc.
+  const semestres: SemestresReticula = [];
+  for (let i = 1; i <= maxSemestre; i++) {
+    semestres.push(materiasPorSemestre.get(i) ?? []);
+  }
+
+  return { semestres, mapa };
+}
+
+/**
+ * @deprecated Usa `mapReticulaEstructurada` para obtener semestres + mapa con anteriores/siguientes.
+ * Esta función se mantiene por compatibilidad temporal y será eliminada en v5.
+ */
 export function mapReticula(
   data: ApiMateriaReticula[] | undefined,
 ): ReticulaMateria[] {
@@ -86,7 +191,7 @@ export function mapReticula(
     const nombre = mapNombre(materia.t);
     let codigo = materia.c;
     if ((codigo === 0 || codigo === 1) && esAutoAcreditada(nombre)) {
-      codigo = 2; // Acreditada
+      codigo = 2;
     }
     return {
       clave: materia.m.trim(),
@@ -97,8 +202,8 @@ export function mapReticula(
       estado:
         ESTADOS_POR_CODIGO[codigo] ??
         (String(codigo) as ESTADO_MATERIA_RETICULA),
-      c: codigo,
-      g: materia.g,
+      anteriores: [],
+      siguientes: [],
       seriacion: mapSeriacion(materia.r ?? []),
     };
   });

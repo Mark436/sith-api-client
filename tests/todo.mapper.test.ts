@@ -28,9 +28,14 @@ test("mapTodo mapea todos los avisos de la lista", () => {
   );
 });
 
-test("mapTodo regresa la retícula mapeada dentro de alumno", () => {
+test("mapTodo regresa la retícula mapeada dentro de alumno (nueva estructura)", () => {
   const datos = mapTodo(baseApiTodoReticula);
-  assert.equal(datos.alumno.reticula.length, 4);
+  // semestres es matriz 2D: semestres[0] = 1er semestre
+  assert.ok(Array.isArray(datos.alumno.semestres));
+  assert.equal(datos.alumno.semestres.length, 6); // max semestre en mock = 6
+  // reticulaMap para acceso por clave
+  assert.ok(datos.alumno.reticulaMap instanceof Map);
+  assert.equal(datos.alumno.reticulaMap.size, 4);
 });
 
 test("mapTodo lanza SithMappingError cuando falta al", () => {

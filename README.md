@@ -99,7 +99,16 @@ Obtiene la información del alumno, su horario inscrito y sus avisos a partir de
 
 **Retorna:** `Promise<{ alumno, avisos }>`
 
-`alumno.horario` contiene las materias inscritas con su horario semanal (`dias.lunes...sabado`, omitiendo los días sin clase). `alumno.reticula` contiene **el plan de estudios completo** tal como lo manda el API, incluidas las materias de **todas las especialidades**; la API no distingue a qué especialidad pertenece cada materia ni expone la especialidad del alumno, así que el filtrado por especialidad queda del lado del consumidor (`ver [`api.md`](./api.md)`). Cada materia expone su `estado` (cadena legible, p. ej. `ESTADO_MATERIA_RETICULA.ACREDITADA`), su código numérico en `codigoEstado` y el campo `c` deprecado (retrocompatible; ver [`api.md`](./api.md)). `alumno.periodoInscripcion` expone el inicio y fin del periodo de reinscripción tal cual el API lo reporta (hora local de Hermosillo, sin conversión). Cada aviso contiene `titulo`, `mensaje` y `tipo`. Los tipos conocidos son `error`, `warn` e `info`, pero el API puede devolver otros (p. ej. `success`), por eso `tipo` es un string abierto.
+`alumno.horario` contiene las materias inscritas con su horario semanal (`dias.lunes...sabado`, omitiendo los días sin clase).
+
+**Retícula (v4.0.0):**
+- `alumno.semestres: ReticulaMateria[][]` — matriz 2D por semestre: `semestres[0]` = 1er semestre, `semestres[1]` = 2do semestre, etc. Semestres sin materias son arrays vacíos `[]`.
+- `alumno.reticulaMap: Map<string, ReticulaMateria>` — acceso directo O(1) por clave de materia (ej. `reticulaMap.get("ACF0905")`).
+- Cada materia incluye `anteriores: string[]` (claves de prerrequisitos) y `siguientes: string[]` (claves de materias que dependen de esta), resueltos desde la seriación `r` del API.
+
+La retícula contiene **el plan de estudios completo** tal como lo manda el API, incluidas las materias de **todas las especialidades**; la API no distingue a qué especialidad pertenece cada materia ni expone la especialidad del alumno, así que el filtrado por especialidad queda del lado del consumidor (`ver [`api.md`](./api.md)`). Cada materia expone su `estado` (cadena legible, p. ej. `ESTADO_MATERIA_RETICULA.ACREDITADA`), su código numérico en `codigoEstado`. Los campos `c` y `g` fueron removidos en v4.0.0.
+
+`alumno.periodoInscripcion` expone el inicio y fin del periodo de reinscripción tal cual el API lo reporta (hora local de Hermosillo, sin conversión). Cada aviso contiene `titulo`, `mensaje` y `tipo`. Los tipos conocidos son `error`, `warn` e `info`, pero el API puede devolver otros (p. ej. `success`), por eso `tipo` es un string abierto.
 
 **Errores:** lanza subclases de `SithError`:
 

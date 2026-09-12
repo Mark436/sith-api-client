@@ -3,9 +3,10 @@ import type { Adeudos } from "../dto/Adeudos.js";
 import type { Alumno } from "../dto/Alumno.js";
 import type { Creditos } from "../dto/Creditos.js";
 import type { PeriodoInscripcion } from "../dto/PeriodoInscripcion.js";
+import type { ReticulaMap, SemestresReticula } from "../dto/Materias.js";
 import { mapBoleta } from "./boleta.mapper.js";
 import { mapHorario } from "./horario.mapper.js";
-import { mapReticula } from "./reticula.mapper.js";
+import { mapReticulaEstructurada } from "./reticula.mapper.js";
 
 function convertirFechaHermosillo(fecha: string): string {
   return `${fecha.replace(" ", "T")}-07:00`;
@@ -61,6 +62,7 @@ export function mapAlumno(data: ApiAlumno): Alumno {
   const { infadic, banco, correo, telefono, boleta } = data;
   const adeudos = mapAdeudos(data);
   const creditos = mapCreditos(data);
+  const { semestres, mapa } = mapReticulaEstructurada(data.ret);
 
   return {
     numeroControl: banco.mp_order,
@@ -78,6 +80,7 @@ export function mapAlumno(data: ApiAlumno): Alumno {
     creditos,
     progreso: calcularProgreso(creditos),
     horario: data.gins.map(mapHorario),
-    reticula: mapReticula(data.ret),
+    semestres,
+    reticulaMap: mapa,
   };
 }

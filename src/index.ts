@@ -163,6 +163,8 @@ export type {
   Coordenadas,
   ReticulaCalificacion,
   ReticulaMateria,
+  ReticulaMap,
+  SemestresReticula,
 } from "./dto/Materias.js";
 export { ESTADO_MATERIA_RETICULA } from "./dto/Materias.js";
 export type { Creditos } from "./dto/Creditos.js";
